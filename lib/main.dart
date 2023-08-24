@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:timer_app/next_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +32,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _minute = 0;
   int _second = 0;
+  int _millisecond = 0;
   Timer? _timer;
   bool _isRunning = false;
 
@@ -55,8 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '$_second',
-              style: TextStyle(fontSize: 64),
+              '${_minute.toString().padLeft(2, '0')}:${_second.toString().padLeft(2, '0')}.${_millisecond.toString().padLeft(2, '0')}',
+              style: const TextStyle(fontSize: 64),
             ),
             ElevatedButton(
               onPressed: () {
@@ -91,19 +92,27 @@ class _MyHomePageState extends State<MyHomePage> {
       // !は変数がNullじゃない、挙動はクラッシュする
       _timer?.cancel();
     } else {
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
         setState(() {
-          _second++;
+          _millisecond++;
+          _millisecond = _millisecond % 100;
+          if (_millisecond == 0) {
+            _second++;
+            if (_second == 60) {
+              _minute++;
+              _second = 0;
+            }
+          }
         });
 
-        if (_second == 10) {
-          resetTimer();
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => NextPage()),
-          );
-        }
+        // if (_second == 10) {
+        //   resetTimer();
+        //
+        //   Navigator.push(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => NextPage()),
+        //   );
+        // }
       });
     }
     setState(() {
@@ -114,7 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void resetTimer() {
     _timer?.cancel();
     setState(() {
+      _minute = 0;
       _second = 0;
+      _millisecond = 0;
       _isRunning = false;
     });
   }
